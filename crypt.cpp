@@ -211,7 +211,7 @@ bool encrypt_file(const wstring &plain_file, const wstring &cipher_file,
 
 	while(true)
 	{
-		const DWORD plain_buffer_length = 10;
+		const DWORD plain_buffer_length = 4096;
 		BYTE plain_buffer[plain_buffer_length] = { };
 
 		DWORD cipher_buffer_size = 0;
@@ -282,7 +282,7 @@ bool decrypt_file(const wstring &cipher_file, const wstring &plain_file,
 	while(true)
 	{
 		DWORD cipher_buffer_size = 0;
-		BYTE cipher_buffer[1024] = { };
+		unique_ptr<BYTE[]> cipher_buffer;
 
 		DWORD plain_buffer_size = 0;
 		unique_ptr<BYTE[]> plain_buffer;
@@ -298,7 +298,16 @@ bool decrypt_file(const wstring &cipher_file, const wstring &plain_file,
 			return false;
 		}
 
-		if(FALSE == ReadFile(cipher_file_handle, cipher_buffer, cipher_buffer_size, &bytes_read, nullptr))
+		cipher_buffer.reset(new (std::nothrow) BYTE[cipher_buffer_size]);
+		if(nullptr == cipher_buffer.get())
+		{
+			MessageBox(nullptr, L"Failed to allocate cipher buffer.", L"Error", MB_OK);
+			CLOSE_HANDLE(plain_file_handle);
+			CLOSE_HANDLE(cipher_file_handle);
+			return false;
+		}
+
+		if(FALSE == ReadFile(cipher_file_handle, cipher_buffer.get(), cipher_buffer_size, &bytes_read, nullptr))
 		{
 			MessageBox(nullptr, L"ReadFile() failed.", L"Error", MB_OK);
 			CLOSE_HANDLE(plain_file_handle);
@@ -309,7 +318,7 @@ bool decrypt_file(const wstring &cipher_file, const wstring &plain_file,
 		if(0 == bytes_read)
 			break;
 
-		if(false == decrypt_data(cipher_buffer, bytes_read, plain_buffer, plain_buffer_size, key_data, key_data_size))
+		if(false == decrypt_data(cipher_buffer.get(), bytes_read, plain_buffer, plain_buffer_size, key_data, key_data_size))
 		{
 			CLOSE_HANDLE(plain_file_handle);
 			CLOSE_HANDLE(cipher_file_handle);
