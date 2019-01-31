@@ -8,6 +8,7 @@ Input will be either a file or directory to encrypt.
 Output will be the file to write encrypted data to or a directory to write encrypted files to.
 
 If the output directory tree does not exist then the program should create it for you.
+If input is a directory then output must also be a directory. If input is a file then output must also be a file.
 
 Encryption method used is MSDN's CryptoAPI Next Generation.
 
