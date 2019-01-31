@@ -29,7 +29,7 @@ Will encrypt all of dir\ and write the files in encrypted\ with the same file na
 Decrypting:
 Instance 1:
 Input: C:\encrypted.txt
-Output: C:\decrypted
+Output: C:\decrypted.txt
 
 Will decrypt encrypted.txt and write it out as decrypted.txt.
 
